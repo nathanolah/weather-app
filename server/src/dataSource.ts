@@ -19,8 +19,30 @@ export class WeatherAPI extends RESTDataSource {
     return camelcaseKeys(data, { deep: true });
   }
 
+  async withCoordsByUnits(lat: number, lon: number, units: string) {
+    const data = await this.get("weather", { lat, lon, units });
+    return camelcaseKeys(data, { deep: true });
+  }
+
   async withCity(city: string) {
     const data = await this.get("weather", { q: city });
+    return camelcaseKeys(data, { deep: true });
+  }
+
+  async withCityByUnits(city: string, units: string) {
+    const data = await this.get("weather", { q: city, units });
+    return camelcaseKeys(data, { deep: true });
+  }
+
+  async withCityCountryByUnits(
+    city: string,
+    countryCode: string,
+    units: string
+  ) {
+    const data = await this.get("weather", {
+      q: city + "," + countryCode,
+      units,
+    });
     return camelcaseKeys(data, { deep: true });
   }
 }

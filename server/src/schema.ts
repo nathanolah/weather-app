@@ -2,17 +2,6 @@ import { gql } from "apollo-server-express";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { IResolvers } from "@graphql-tools/utils";
 
-// const books = [
-//   {
-//     title: "The Awakening",
-//     author: "Kate Chopin",
-//   },
-//   {
-//     title: "City of Glass",
-//     author: "Paul Auster",
-//   },
-// ];
-
 // Schema definition
 const typeDefs = gql`
   type WeatherTemp {
@@ -48,35 +37,72 @@ const typeDefs = gql`
 
   type Query {
     weatherByCity(city: String!): WeatherResponse
+    weatherByCityWithUnits(city: String!, units: String!): WeatherResponse
+    weatherByCityCountryWithUnits(
+      city: String!
+      countryCode: String!
+      units: String!
+    ): WeatherResponse
     weatherByCoords(lat: Float!, lon: Float!): WeatherResponse
+    weatherByCoordsWithUnits(
+      lat: Float!
+      lon: Float!
+      units: String!
+    ): WeatherResponse
   }
-
-  # type Book {
-  #   title: String
-  #   author: String
-  # }
-
-  # type Query {
-  #   books: [Book]
-  # }
 `;
 
 // Resolver map
 const resolvers: IResolvers = {
   Query: {
     weatherByCity: (_, { city }, { dataSources }) => {
+      if (city === null || city === "") {
+        throw new Error("City must be provided");
+      }
+
       return dataSources.weatherAPI.withCity(city);
+    },
+    weatherByCityWithUnits: (_, { city, units }, { dataSources }) => {
+      if (city === null || city === "") {
+        throw new Error("City must be provided");
+      }
+
+      if (units === null || units === "") {
+        throw new Error("Unit must be provided, either 'metric' or 'imperial'");
+      }
+
+      return dataSources.weatherAPI.withCityByUnits(city, units);
+    },
+    weatherByCityCountryWithUnits: (
+      _,
+      { city, countryCode, units },
+      { dataSources }
+    ) => {
+      if (countryCode === null || countryCode === "") {
+        throw new Error("Country code must be provided");
+      }
+
+      if (units === null || units === "") {
+        throw new Error("Unit must be provided, either 'metric' or 'imperial'");
+      }
+
+      return dataSources.weatherAPI.withCityCountryByUnits(
+        city,
+        countryCode,
+        units
+      );
     },
     weatherByCoords: (_, { lat, lon }, { dataSources }) => {
       return dataSources.weatherAPI.withCoords(lat, lon);
     },
-  },
+    weatherByCoordsWithUnits: (_, { lat, lon, units }, { dataSources }) => {
+      if (units === "") {
+        throw new Error("Unit must be provided, either 'metric' or 'imperial'");
+      }
 
-  // Query: {
-  //   books() {
-  //     return books;
-  //   },
-  // },
+      return dataSources.weatherAPI.withCoordsByUnits(lat, lon, units);
+    },
+  },
 };
 
 export const schema = makeExecutableSchema({ typeDefs, resolvers });

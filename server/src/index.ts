@@ -11,7 +11,7 @@ import { schema } from "./schema";
 import { dataSources } from "./dataSource";
 
 const main = async () => {
-  const PORT = 4000;
+  const PORT = process.env.PORT || 4000;
 
   // Required logic for integrating with Express
   const app = express();
